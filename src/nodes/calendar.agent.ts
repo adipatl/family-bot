@@ -5,7 +5,7 @@ import { addEvent, getEvents } from "../services/calendar.service.js";
 import type { BotState } from "../graph/state.js";
 
 const llm = new ChatAnthropic({
-  model: "claude-sonnet-4-5-20250514",
+  model: "claude-sonnet-4-6",
   anthropicApiKey: config.anthropic.apiKey,
   maxTokens: 500,
   temperature: 0,

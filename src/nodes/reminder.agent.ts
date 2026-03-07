@@ -8,7 +8,7 @@ import {
 import type { BotState } from "../graph/state.js";
 
 const llm = new ChatAnthropic({
-  model: "claude-sonnet-4-5-20250514",
+  model: "claude-sonnet-4-6",
   anthropicApiKey: config.anthropic.apiKey,
   maxTokens: 300,
   temperature: 0,

@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "tsc && cp src/prompts/*.md dist/src/prompts/",
     "start": "node dist/index.js",
     "test:graph": "tsx test-graph.ts",
     "visualize": "tsx src/graph/visualize.ts"

@@ -1,5 +1,6 @@
 import { ChatAnthropic } from "@langchain/anthropic";
 import { config } from "../config/index.js";
+import { loadPrompt } from "../prompts/loader.js";
 import { addEvent, getEvents } from "../services/calendar.service.js";
 import type { BotState } from "../graph/state.js";
 
@@ -16,24 +17,18 @@ export async function calendarAgent(
   const { userMessage, userName } = state;
 
   try {
-    // Ask Claude to parse the intent (add event or query events) and extract details
+    const today = new Date().toLocaleDateString("th-TH", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: "Asia/Bangkok",
+    });
+
     const parseResponse = await llm.invoke([
       {
         role: "system",
-        content: `คุณเป็นผู้ช่วยจัดการปฏิทินครอบครัว วันนี้คือ ${new Date().toLocaleDateString("th-TH", { weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "Asia/Bangkok" })}
-
-วิเคราะห์ข้อความและตอบเป็น JSON เท่านั้น:
-{
-  "action": "add" | "query",
-  "summary": "ชื่อนัด (สำหรับ add)",
-  "date": "YYYY-MM-DD",
-  "startTime": "HH:mm",
-  "endTime": "HH:mm",
-  "queryDateEnd": "YYYY-MM-DD (สำหรับ query range)"
-}
-
-ถ้าไม่ระบุเวลาจบ ให้ endTime = startTime + 1 ชั่วโมง
-ถ้าถามว่า "วันนี้มีนัดอะไร" ให้ action=query, date=วันนี้`,
+        content: loadPrompt("calendar", { TODAY: today }),
       },
       { role: "user", content: userMessage },
     ]);

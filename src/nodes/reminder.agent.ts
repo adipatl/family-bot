@@ -1,5 +1,6 @@
 import { ChatAnthropic } from "@langchain/anthropic";
 import { config } from "../config/index.js";
+import { loadPrompt } from "../prompts/loader.js";
 import {
   addReminder,
   listReminders,
@@ -46,22 +47,12 @@ export async function reminderAgent(
     }
 
     // Add reminder — use Claude to parse when and what
+    const now = new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
+
     const parseResponse = await llm.invoke([
       {
         role: "system",
-        content: `คุณเป็นผู้ช่วย parse เวลาจากข้อความภาษาไทย
-เวลาปัจจุบัน: ${new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}
-
-ตอบเป็น JSON เท่านั้น:
-{
-  "message": "สิ่งที่ต้องเตือน",
-  "dueAt": "YYYY-MM-DDTHH:mm:00+07:00"
-}
-
-ตัวอย่าง:
-- "เตือนด้วย พรุ่งนี้เช้าซื้อนม" → เช้า = 08:00
-- "เตือน 5 โมงเย็น ไปรับลูก" → 17:00 วันนี้
-- "เตือน อีก 30 นาที กินยา" → เวลาปัจจุบัน + 30 นาที`,
+        content: loadPrompt("reminder", { NOW: now }),
       },
       { role: "user", content: userMessage },
     ]);

@@ -1,5 +1,6 @@
 import { ChatAnthropic } from "@langchain/anthropic";
 import { config } from "../config/index.js";
+import { loadPrompt } from "../prompts/loader.js";
 import type { BotState, AgentName } from "./state.js";
 
 // --- Keyword patterns (Thai) ---
@@ -51,15 +52,7 @@ async function classifyByLLM(
   const response = await llm.invoke([
     {
       role: "system",
-      content: `คุณเป็น classifier สำหรับ family bot ภาษาไทย
-จัดประเภทข้อความผู้ใช้เป็นหนึ่งใน:
-- calendar_agent: เรื่องปฏิทิน นัดหมาย ตาราง วัน เวลา
-- notes_agent: จดบันทึก โน้ต memo รายการ
-- reminder_agent: ตั้งเตือน แจ้งเตือน alarm
-- homework_agent: ถามการบ้าน อธิบายเรื่องเรียน คำนวณ วิทยาศาสตร์
-- chat_agent: คุยเล่น ทักทาย ไม่เข้าหมวดไหน
-
-ตอบเฉพาะชื่อ agent เท่านั้น ไม่ต้องอธิบาย`,
+      content: loadPrompt("supervisor"),
     },
     { role: "user", content: message },
   ]);

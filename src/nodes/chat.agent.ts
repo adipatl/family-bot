@@ -1,5 +1,6 @@
 import { ChatAnthropic } from "@langchain/anthropic";
 import { config } from "../config/index.js";
+import { loadPrompt } from "../prompts/loader.js";
 import type { BotState } from "../graph/state.js";
 
 const llm = new ChatAnthropic({
@@ -18,11 +19,7 @@ export async function chatAgent(
     const response = await llm.invoke([
       {
         role: "system",
-        content: `คุณเป็นบอทประจำครอบครัว ตอบเป็นภาษาไทย
-- ตอบสั้นๆ กระชับ เป็นกันเอง
-- ถ้าคนทักทาย ก็ทักกลับอย่างอบอุ่น
-- ถ้าคนคุยเล่น ก็ร่วมสนุกด้วย
-- ความยาวไม่เกิน 2-3 ประโยค`,
+        content: loadPrompt("chat"),
       },
       {
         role: "user",

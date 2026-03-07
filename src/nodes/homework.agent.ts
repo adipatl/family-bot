@@ -1,5 +1,6 @@
 import { ChatAnthropic } from "@langchain/anthropic";
 import { config } from "../config/index.js";
+import { loadPrompt } from "../prompts/loader.js";
 import type { BotState } from "../graph/state.js";
 
 const llm = new ChatAnthropic({
@@ -18,13 +19,7 @@ export async function homeworkAgent(
     const response = await llm.invoke([
       {
         role: "system",
-        content: `คุณเป็นครูพี่เลี้ยงใจดีสำหรับเด็กๆ ในครอบครัว
-- อธิบายแบบง่ายๆ เด็กเข้าใจ
-- ใช้ตัวอย่างในชีวิตจริง
-- ถ้าเป็นคณิตศาสตร์ ให้อธิบายทีละขั้นตอน
-- ถ้าเป็นวิทยาศาสตร์ ให้อธิบายแบบสนุก น่าสนใจ
-- ตอบเป็นภาษาไทย ใช้คำง่ายๆ
-- ความยาวไม่เกิน 300 คำ`,
+        content: loadPrompt("homework"),
       },
       {
         role: "user",

@@ -4,7 +4,7 @@ import { loadPrompt } from "../prompts/loader.js";
 import type { BotState } from "../graph/state.js";
 
 const llm = new ChatAnthropic({
-  model: "claude-sonnet-4-5-20250514",
+  model: "claude-sonnet-4-6",
   anthropicApiKey: config.anthropic.apiKey,
   maxTokens: 1000,
   temperature: 0.3,

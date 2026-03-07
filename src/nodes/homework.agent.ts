@@ -10,7 +10,7 @@ const llm = createLLM({ model: "claude-sonnet-4-6", maxTokens: 2000, temperature
 export async function homeworkAgent(
   state: BotState,
 ): Promise<Partial<BotState>> {
-  const { userMessage, userName } = state;
+  const { userMessage, userName, language } = state;
 
   try {
     const today = new Date().toLocaleDateString("th-TH", {
@@ -24,11 +24,11 @@ export async function homeworkAgent(
     const response = await llm.invoke([
       {
         role: "system",
-        content: loadPrompt("homework", { TODAY: today }),
+        content: loadPrompt("homework", { TODAY: today, LANGUAGE: language === "th" ? "Thai" : "English" }),
       },
       {
         role: "user",
-        content: `${userName} ถามว่า: ${userMessage}`,
+        content: `${userName}: ${userMessage}`,
       },
     ]);
 

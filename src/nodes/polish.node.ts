@@ -10,7 +10,7 @@ const llm = createLLM({ maxTokens: 1000, temperature: 0.6 });
 export async function polishNode(
   state: BotState,
 ): Promise<Partial<BotState>> {
-  const { replyText, error } = state;
+  const { replyText, error, language } = state;
 
   // Skip polish if there's an error or no reply
   if (!replyText || error) {
@@ -22,7 +22,7 @@ export async function polishNode(
       { role: "system", content: loadPrompt("polish") },
       {
         role: "user",
-        content: `ช่วย polish ข้อความนี้ให้เป็นน้ำเสียงคุกกี้:\n\n${replyText}`,
+        content: `Polish this message in Kookie's voice. Output language: ${language === "th" ? "Thai" : "English"}.\n\n${replyText}`,
       },
     ]);
 

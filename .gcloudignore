@@ -1,0 +1,12 @@
+node_modules/
+dist/
+credentials/
+.env
+.env.*
+*.log
+.git/
+.github/
+.vscode/
+*.md
+!src/prompts/*.md
+test-graph.ts

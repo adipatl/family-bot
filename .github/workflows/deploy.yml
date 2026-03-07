@@ -1,0 +1,68 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main]
+
+env:
+  SERVICE_NAME: family-bot
+  REGION: ${{ secrets.GCP_REGION || 'asia-southeast1' }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Authorize Docker push
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/cloud-run-source/${{ env.SERVICE_NAME }}:${{ github.sha }}"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.REGION }}
+          image: ${{ env.IMAGE }}
+          env_vars: |
+            FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
+            GOOGLE_CALENDAR_ID=${{ secrets.GOOGLE_CALENDAR_ID }}
+          secrets: |
+            LINE_CHANNEL_ACCESS_TOKEN=LINE_CHANNEL_ACCESS_TOKEN:latest
+            LINE_CHANNEL_SECRET=LINE_CHANNEL_SECRET:latest
+            ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest
+            GOOGLE_SA_KEY_BASE64=GOOGLE_SA_KEY_BASE64:latest
+            FIREBASE_SA_KEY_BASE64=FIREBASE_SA_KEY_BASE64:latest
+          flags: |
+            --port=3000
+            --memory=256Mi
+            --cpu=1
+            --min-instances=0
+            --max-instances=3
+            --allow-unauthenticated
+
+      - name: Show deployed URL
+        run: |
+          URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} --region=${{ env.REGION }} --format='value(status.url)')
+          echo "🚀 Deployed to: $URL"
+          echo "📡 Webhook URL: $URL/webhook"

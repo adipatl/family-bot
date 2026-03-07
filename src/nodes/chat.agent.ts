@@ -2,7 +2,7 @@ import { loadPrompt } from "../prompts/loader.js";
 import { createLLM } from "../llm.js";
 import type { BotState } from "../graph/state.js";
 
-const llm = createLLM({ maxTokens: 300, temperature: 0.7 });
+const llm = createLLM({ maxTokens: 2000, temperature: 0.7 });
 
 export async function chatAgent(
   state: BotState,

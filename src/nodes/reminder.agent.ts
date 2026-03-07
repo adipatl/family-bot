@@ -6,7 +6,7 @@ import {
 } from "../services/firestore.service.js";
 import type { BotState } from "../graph/state.js";
 
-const llm = createLLM({ model: "claude-sonnet-4-6", maxTokens: 300 });
+const llm = createLLM({ model: "claude-sonnet-4-6", maxTokens: 1000 });
 
 const LIST_PATTERN = /เช็ค reminder|ดู reminder|ดูเตือน|รายการเตือน|เตือนอะไรบ้าง/i;
 

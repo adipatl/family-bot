@@ -1,6 +1,9 @@
 import { loadPrompt } from "../prompts/loader.js";
 import { createLLM } from "../llm.js";
 import type { BotState } from "../graph/state.js";
+import { createLogger } from "../logger.js";
+
+const log = createLogger("polish");
 
 const llm = createLLM({ maxTokens: 1000, temperature: 0.6 });
 
@@ -30,7 +33,7 @@ export async function polishNode(
 
     return { replyText: polished };
   } catch (err) {
-    console.error("[PolishNode] Error:", err);
+    log.warn({ requestId: state.requestId, err }, "Polish failed, keeping original");
     // If polish fails, keep original reply
     return {};
   }

@@ -1,6 +1,9 @@
 import { messagingApi } from "@line/bot-sdk";
 import { getDueReminders, markReminderNotified } from "./firestore.service.js";
 import { config } from "../config/index.js";
+import { createLogger } from "../logger.js";
+
+const log = createLogger("reminder-checker");
 
 const POLL_INTERVAL_MS = 60_000; // Check every minute
 
@@ -13,7 +16,7 @@ export function startReminderChecker(): void {
     channelAccessToken: config.line.channelAccessToken,
   });
 
-  console.log("🔔 Reminder checker started (polling every 60s)");
+  log.info("Reminder checker started (polling every 60s)");
 
   intervalId = setInterval(async () => {
     try {
@@ -28,10 +31,10 @@ export function startReminderChecker(): void {
         });
 
         await markReminderNotified(reminder.id!);
-        console.log(`Notified reminder: ${reminder.id}`);
+        log.info({ reminderId: reminder.id, groupId: reminder.groupId }, "Reminder notified");
       }
     } catch (err) {
-      console.error("Reminder checker error:", err);
+      log.error({ err }, "Reminder checker cycle failed");
     }
   }, POLL_INTERVAL_MS);
 }

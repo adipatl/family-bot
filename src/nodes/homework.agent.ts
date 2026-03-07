@@ -1,6 +1,9 @@
 import { loadPrompt } from "../prompts/loader.js";
 import { createLLM } from "../llm.js";
 import type { BotState } from "../graph/state.js";
+import { createLogger } from "../logger.js";
+
+const log = createLogger("homework-agent");
 
 const llm = createLLM({ model: "claude-sonnet-4-6", maxTokens: 2000, temperature: 0.3 });
 
@@ -36,7 +39,7 @@ export async function homeworkAgent(
 
     return { replyText: text };
   } catch (err) {
-    console.error("[HomeworkAgent] Error:", err);
+    log.error({ requestId: state.requestId, err }, "Homework agent failed");
     return {
       replyText: "อุ๊ปส์ คุกกี้ตอบไม่ได้ตอนนี้อ่ะ ลองถามใหม่นะคับ 🐥",
       error: String(err),

@@ -1,6 +1,9 @@
 import { loadPrompt } from "../prompts/loader.js";
 import { createLLM } from "../llm.js";
 import type { BotState } from "../graph/state.js";
+import { createLogger } from "../logger.js";
+
+const log = createLogger("chat-agent");
 
 const llm = createLLM({ maxTokens: 2000, temperature: 0.7 });
 
@@ -36,7 +39,7 @@ export async function chatAgent(
 
     return { replyText: text };
   } catch (err) {
-    console.error("[ChatAgent] Error:", err);
+    log.error({ requestId: state.requestId, err }, "Chat agent failed");
     return {
       replyText: "สวัสดี~ คุกกี้พร้อมช่วยเสมอนะคับ 🐥",
       error: String(err),

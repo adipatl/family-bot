@@ -16,6 +16,7 @@ export const BotStateAnnotation = Annotation.Root({
   userName: Annotation<string>,
   userId: Annotation<string>,
   groupId: Annotation<string>,
+  requestId: Annotation<string>,
 
   // Routing (set by supervisor)
   routedTo: Annotation<AgentName>,

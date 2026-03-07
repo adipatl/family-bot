@@ -1,6 +1,9 @@
 import { loadPrompt } from "../prompts/loader.js";
 import { createLLM } from "../llm.js";
 import type { BotState, AgentName } from "./state.js";
+import { createLogger } from "../logger.js";
+
+const log = createLogger("supervisor");
 
 // --- Keyword patterns (Thai) ---
 
@@ -115,8 +118,9 @@ export async function supervisorNode(
   // Tier 1: Keyword matching (free, fast, high confidence)
   const keywordResult = classifyByKeyword(message);
   if (keywordResult) {
-    console.log(
-      `[Supervisor] Keyword → ${keywordResult.agent} (${keywordResult.confidence})`,
+    log.info(
+      { requestId: state.requestId, agent: keywordResult.agent, confidence: keywordResult.confidence, tier: "keyword" },
+      "Routed",
     );
     return {
       routedTo: keywordResult.agent,
@@ -127,15 +131,16 @@ export async function supervisorNode(
   // Tier 2: LLM classification (handles ambiguity)
   try {
     const llmResult = await classifyByLLM(message);
-    console.log(
-      `[Supervisor] LLM → ${llmResult.agent} (${llmResult.confidence}) | ${llmResult.reasoning}`,
+    log.info(
+      { requestId: state.requestId, agent: llmResult.agent, confidence: llmResult.confidence, reasoning: llmResult.reasoning, tier: "llm" },
+      "Routed",
     );
     return {
       routedTo: llmResult.agent,
       confidence: llmResult.confidence,
     };
   } catch (err) {
-    console.error("[Supervisor] LLM failed:", err);
+    log.error({ requestId: state.requestId, err }, "LLM classification failed");
     return {
       routedTo: "chat_agent",
       confidence: 0.1,

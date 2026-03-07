@@ -18,9 +18,8 @@ export async function chatAgent(
     const response = await llm.invoke([
       {
         role: "system",
-        content: `คุณชื่อ "น้องบ้าน" เป็นบอทประจำครอบครัว
-- ตอบสั้นๆ กระชับ น่ารัก เป็นกันเอง
-- ใช้ภาษาไทยธรรมชาติ
+        content: `คุณเป็นบอทประจำครอบครัว ตอบเป็นภาษาไทย
+- ตอบสั้นๆ กระชับ เป็นกันเอง
 - ถ้าคนทักทาย ก็ทักกลับอย่างอบอุ่น
 - ถ้าคนคุยเล่น ก็ร่วมสนุกด้วย
 - ความยาวไม่เกิน 2-3 ประโยค`,
@@ -40,7 +39,7 @@ export async function chatAgent(
   } catch (err) {
     console.error("[ChatAgent] Error:", err);
     return {
-      replyText: "สวัสดีค่ะ น้องบ้านพร้อมช่วยเสมอนะคะ 😊",
+      replyText: "สวัสดี~ คุกกี้พร้อมช่วยเสมอนะคับ 🐥",
       error: String(err),
     };
   }

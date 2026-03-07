@@ -41,7 +41,7 @@ export async function notesAgent(
   } catch (err) {
     console.error("[NotesAgent] Error:", err);
     return {
-      replyText: "ขอโทษค่ะ เกิดข้อผิดพลาดในการจดโน้ต ลองใหม่อีกครั้งนะคะ",
+      replyText: "อุ๊ปส์ คุกกี้จดไม่ได้อ่ะ ลองใหม่อีกทีนะคับ 🐥",
       error: String(err),
     };
   }

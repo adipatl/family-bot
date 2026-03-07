@@ -18,7 +18,7 @@ export async function homeworkAgent(
     const response = await llm.invoke([
       {
         role: "system",
-        content: `คุณเป็นครูพี่เลี้ยงใจดีสำหรับเด็กๆ ในครอบครัว ชื่อ "น้องบ้าน"
+        content: `คุณเป็นครูพี่เลี้ยงใจดีสำหรับเด็กๆ ในครอบครัว
 - อธิบายแบบง่ายๆ เด็กเข้าใจ
 - ใช้ตัวอย่างในชีวิตจริง
 - ถ้าเป็นคณิตศาสตร์ ให้อธิบายทีละขั้นตอน
@@ -41,7 +41,7 @@ export async function homeworkAgent(
   } catch (err) {
     console.error("[HomeworkAgent] Error:", err);
     return {
-      replyText: "ขอโทษค่ะ ตอบไม่ได้ตอนนี้ ลองถามใหม่อีกครั้งนะคะ",
+      replyText: "อุ๊ปส์ คุกกี้ตอบไม่ได้ตอนนี้อ่ะ ลองถามใหม่นะคับ 🐥",
       error: String(err),
     };
   }

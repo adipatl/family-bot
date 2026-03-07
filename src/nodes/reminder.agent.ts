@@ -98,7 +98,7 @@ export async function reminderAgent(
   } catch (err) {
     console.error("[ReminderAgent] Error:", err);
     return {
-      replyText: "ขอโทษค่ะ เกิดข้อผิดพลาดในการตั้งเตือน ลองใหม่อีกครั้งนะคะ",
+      replyText: "อุ๊ปส์ คุกกี้ตั้งเตือนไม่ได้อ่ะ ลองใหม่อีกทีนะคับ 🐥",
       error: String(err),
     };
   }

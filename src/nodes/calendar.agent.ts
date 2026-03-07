@@ -105,7 +105,7 @@ export async function calendarAgent(
   } catch (err) {
     console.error("[CalendarAgent] Error:", err);
     return {
-      replyText: "ขอโทษค่ะ เกิดข้อผิดพลาดในการจัดการปฏิทิน ลองใหม่อีกครั้งนะคะ",
+      replyText: "อุ๊ปส์ คุกกี้จัดการปฏิทินไม่ได้อ่ะ ลองใหม่อีกทีนะคับ 🐥",
       error: String(err),
     };
   }

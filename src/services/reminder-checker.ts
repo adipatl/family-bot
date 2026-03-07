@@ -20,7 +20,7 @@ export function startReminderChecker(): void {
       const dueReminders = await getDueReminders();
 
       for (const reminder of dueReminders) {
-        const text = `🔔 เตือนความจำ: ${reminder.message}\n(ตั้งโดย ${reminder.userName})`;
+        const text = `🐥 คุกกี้มาเตือนน้า~\n🔔 ${reminder.message}\n(${reminder.userName} บอกให้เตือนค่าบ)`;
 
         await client.pushMessage({
           to: reminder.groupId,

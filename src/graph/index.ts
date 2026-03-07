@@ -6,6 +6,7 @@ import { notesAgent } from "../nodes/notes.agent.js";
 import { reminderAgent } from "../nodes/reminder.agent.js";
 import { homeworkAgent } from "../nodes/homework.agent.js";
 import { chatAgent } from "../nodes/chat.agent.js";
+import { polishNode } from "../nodes/polish.node.js";
 
 export function buildGraph() {
   const graph = new StateGraph(BotStateAnnotation)
@@ -15,12 +16,15 @@ export function buildGraph() {
     .addNode("reminder_agent", reminderAgent)
     .addNode("homework_agent", homeworkAgent)
     .addNode("chat_agent", chatAgent)
+    .addNode("polish", polishNode)
     .addEdge(START, "supervisor")
-    .addEdge("calendar_agent", END)
-    .addEdge("notes_agent", END)
-    .addEdge("reminder_agent", END)
-    .addEdge("homework_agent", END)
-    .addEdge("chat_agent", END)
+    // All agents → polish → END
+    .addEdge("calendar_agent", "polish")
+    .addEdge("notes_agent", "polish")
+    .addEdge("reminder_agent", "polish")
+    .addEdge("homework_agent", "polish")
+    .addEdge("chat_agent", "polish")
+    .addEdge("polish", END)
     .addConditionalEdges(
       "supervisor",
       (state) => state.routedTo,

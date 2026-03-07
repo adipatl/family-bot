@@ -10,10 +10,18 @@ export async function chatAgent(
   const { userMessage, userName } = state;
 
   try {
+    const today = new Date().toLocaleDateString("th-TH", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: "Asia/Bangkok",
+    });
+
     const response = await llm.invoke([
       {
         role: "system",
-        content: loadPrompt("chat"),
+        content: loadPrompt("chat", { TODAY: today }),
       },
       {
         role: "user",

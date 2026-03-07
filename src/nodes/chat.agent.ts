@@ -10,7 +10,7 @@ const llm = createLLM({ maxTokens: 2000, temperature: 0.7 });
 export async function chatAgent(
   state: BotState,
 ): Promise<Partial<BotState>> {
-  const { userMessage, userName } = state;
+  const { userMessage, userName, language } = state;
 
   try {
     const today = new Date().toLocaleDateString("th-TH", {
@@ -24,7 +24,7 @@ export async function chatAgent(
     const response = await llm.invoke([
       {
         role: "system",
-        content: loadPrompt("chat", { TODAY: today }),
+        content: loadPrompt("chat", { TODAY: today, LANGUAGE: language === "th" ? "Thai" : "English" }),
       },
       {
         role: "user",

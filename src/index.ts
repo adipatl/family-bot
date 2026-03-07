@@ -16,6 +16,11 @@ import { createLogger } from "./logger.js";
 
 const log = createLogger("webhook");
 
+function detectLanguage(text: string): "th" | "en" {
+  const thaiCharCount = (text.match(/[\u0E00-\u0E7F]/g) || []).length;
+  return thaiCharCount / text.length > 0.3 ? "th" : "en";
+}
+
 const app = express();
 
 // In-memory profile cache (userId → displayName)
@@ -132,6 +137,7 @@ app.post(
         userId,
         groupId,
         requestId,
+        language: detectLanguage(userMessage),
       });
 
       const [ackSent, graphResult] = await Promise.allSettled([

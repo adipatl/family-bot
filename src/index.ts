@@ -41,10 +41,34 @@ app.post(
       const messageEvent = event as MessageEvent;
       const textMessage = messageEvent.message as TextEventMessage;
       const userId = messageEvent.source.userId ?? "unknown";
+      const isGroup = messageEvent.source.type === "group";
       const groupId =
         messageEvent.source.type === "group"
           ? messageEvent.source.groupId
           : userId;
+
+      // In group chats, only respond when the bot is mentioned
+      const botUserId: string | undefined = req.body.destination;
+      const isBotMentioned = textMessage.mention?.mentionees?.some(
+        (m) => m.type === "user" && m.userId === botUserId,
+      );
+
+      if (isGroup && !isBotMentioned) {
+        continue;
+      }
+
+      // Remove @bot mention text so the LLM sees clean input
+      let userMessage = textMessage.text;
+      if (isBotMentioned && textMessage.mention?.mentionees) {
+        const selfMentions = textMessage.mention.mentionees
+          .filter((m) => m.type === "user" && m.userId === botUserId)
+          .sort((a, b) => b.index - a.index); // reverse order to preserve indices
+        for (const m of selfMentions) {
+          userMessage =
+            userMessage.slice(0, m.index) + userMessage.slice(m.index + m.length);
+        }
+        userMessage = userMessage.trim();
+      }
 
       // Use cached name or default — never block on profile fetch
       const cachedName = profileCache.get(userId);
@@ -78,7 +102,7 @@ app.post(
       // Send ack immediately — static messages, no LLM needed
       const ackPromise = (async () => {
         try {
-          const ackMessages = generateAckMessages(textMessage.text);
+          const ackMessages = generateAckMessages(userMessage);
           if (messageEvent.replyToken) {
             await client.replyMessage({
               replyToken: messageEvent.replyToken,
@@ -94,7 +118,7 @@ app.post(
       })();
 
       const graphPromise = graph.invoke({
-        userMessage: textMessage.text,
+        userMessage,
         userName,
         userId,
         groupId,

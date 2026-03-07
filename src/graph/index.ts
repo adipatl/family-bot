@@ -40,11 +40,8 @@ export function buildGraph() {
   return graph.compile();
 }
 
-let compiledGraph: ReturnType<typeof buildGraph> | null = null;
+const compiledGraph = buildGraph();
 
 export function getGraph() {
-  if (!compiledGraph) {
-    compiledGraph = buildGraph();
-  }
   return compiledGraph;
 }

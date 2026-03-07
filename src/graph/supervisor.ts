@@ -39,16 +39,16 @@ function classifyByKeyword(
 
 // --- LLM classification (fallback) ---
 
+const llm = new ChatAnthropic({
+  model: "claude-haiku-4-5-20251001",
+  anthropicApiKey: config.anthropic.apiKey,
+  maxTokens: 100,
+  temperature: 0,
+});
+
 async function classifyByLLM(
   message: string,
 ): Promise<{ agent: AgentName; confidence: number }> {
-  const llm = new ChatAnthropic({
-    model: "claude-haiku-4-5-20251001",
-    anthropicApiKey: config.anthropic.apiKey,
-    maxTokens: 100,
-    temperature: 0,
-  });
-
   const response = await llm.invoke([
     {
       role: "system",

@@ -40,8 +40,28 @@ export async function calendarAgent(
     const parsed = JSON.parse(jsonMatch[0]);
 
     if (parsed.action === "date_info") {
+      const todayISO = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Bangkok" });
+      const askedDate = new Date(`${parsed.date}T00:00:00+07:00`);
+      const askedDateStr = askedDate.toLocaleDateString("th-TH", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        timeZone: "Asia/Bangkok",
+      });
+
+      let label: string;
+      if (parsed.date === todayISO) {
+        label = "วันนี้";
+      } else {
+        const tomorrowDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
+        tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+        const tomorrowISO = tomorrowDate.toLocaleDateString("en-CA", { timeZone: "Asia/Bangkok" });
+        label = parsed.date === tomorrowISO ? "พรุ่งนี้" : parsed.date;
+      }
+
       return {
-        replyText: `📅 วันนี้คือ ${today} ค่ะ`,
+        replyText: `📅 ${label}คือ ${askedDateStr} ค่ะ`,
       };
     }
 

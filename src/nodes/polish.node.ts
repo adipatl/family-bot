@@ -2,7 +2,7 @@ import { loadPrompt } from "../prompts/loader.js";
 import { createLLM } from "../llm.js";
 import type { BotState } from "../graph/state.js";
 
-const llm = createLLM({ maxTokens: 500, temperature: 0.6 });
+const llm = createLLM({ maxTokens: 1000, temperature: 0.6 });
 
 export async function polishNode(
   state: BotState,

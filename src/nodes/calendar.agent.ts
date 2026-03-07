@@ -3,7 +3,7 @@ import { createLLM } from "../llm.js";
 import { addEvent, getEvents } from "../services/calendar.service.js";
 import type { BotState } from "../graph/state.js";
 
-const llm = createLLM({ maxTokens: 500 });
+const llm = createLLM({ maxTokens: 1000 });
 
 export async function calendarAgent(
   state: BotState,
@@ -38,6 +38,12 @@ export async function calendarAgent(
     }
 
     const parsed = JSON.parse(jsonMatch[0]);
+
+    if (parsed.action === "date_info") {
+      return {
+        replyText: `📅 วันนี้คือ ${today} ค่ะ`,
+      };
+    }
 
     if (parsed.action === "add") {
       const start = new Date(`${parsed.date}T${parsed.startTime}:00+07:00`);

@@ -9,6 +9,7 @@ import {
 import { config } from "./config/index.js";
 import { getGraph } from "./graph/index.js";
 import { startReminderChecker } from "./services/reminder-checker.js";
+import { generateAckMessages } from "./services/ack.service.js";
 
 const app = express();
 
@@ -57,38 +58,68 @@ app.post(
 
       console.log(`[Webhook] ${userName}: ${textMessage.text}`);
 
-      try {
-        const result = await graph.invoke({
-          userMessage: textMessage.text,
-          userName,
-          userId,
-          groupId,
-        });
+      // Run ack (fast) and graph (slow) in parallel
+      const ackPromise = (async () => {
+        try {
+          const ackMessages = await generateAckMessages(
+            textMessage.text,
+            userName,
+          );
+          if (messageEvent.replyToken) {
+            await client.replyMessage({
+              replyToken: messageEvent.replyToken,
+              messages: ackMessages,
+            });
+            return true;
+          }
+          return false;
+        } catch (err) {
+          console.error("[Webhook] Ack failed:", err);
+          return false;
+        }
+      })();
 
+      const graphPromise = graph.invoke({
+        userMessage: textMessage.text,
+        userName,
+        userId,
+        groupId,
+      });
+
+      const [ackSent, graphResult] = await Promise.allSettled([
+        ackPromise,
+        graphPromise,
+      ]);
+
+      const target = groupId ?? userId;
+
+      if (graphResult.status === "fulfilled") {
+        const result = graphResult.value;
         console.log(
           `[Webhook] Routed to: ${result.routedTo}, Reply: ${result.replyText?.substring(0, 50)}...`,
         );
 
-        if (result.replyText && messageEvent.replyToken) {
-          await client.replyMessage({
-            replyToken: messageEvent.replyToken,
+        if (result.replyText) {
+          await client.pushMessage({
+            to: target,
             messages: [{ type: "text", text: result.replyText }],
           });
         }
-      } catch (err) {
-        console.error("[Webhook] Graph invocation error:", err);
+      } else {
+        console.error(
+          "[Webhook] Graph invocation error:",
+          graphResult.reason,
+        );
 
-        if (messageEvent.replyToken) {
-          await client.replyMessage({
-            replyToken: messageEvent.replyToken,
-            messages: [
-              {
-                type: "text",
-                text: "อุ๊ปส์ คุกกี้พลาดไปหน่อย ลองใหม่อีกทีนะคับ 🐥",
-              },
-            ],
-          });
-        }
+        await client.pushMessage({
+          to: target,
+          messages: [
+            {
+              type: "text",
+              text: "อุ๊ปส์ คุกกี้พลาดไปหน่อย ลองใหม่อีกทีนะคับ 🐥",
+            },
+          ],
+        });
       }
     }
   },

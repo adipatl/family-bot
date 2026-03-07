@@ -6,12 +6,16 @@ import {
   type TextEventMessage,
   type MessageEvent,
 } from "@line/bot-sdk";
+import { ChatAnthropic } from "@langchain/anthropic";
 import { config } from "./config/index.js";
 import { getGraph } from "./graph/index.js";
 import { startReminderChecker } from "./services/reminder-checker.js";
 import { generateAckMessages } from "./services/ack.service.js";
 
 const app = express();
+
+// In-memory profile cache (userId → displayName)
+const profileCache = new Map<string, string>();
 
 // LINE webhook signature verification middleware
 app.post(
@@ -42,30 +46,48 @@ app.post(
           ? messageEvent.source.groupId
           : userId;
 
-      // Get user display name
-      let userName = "สมาชิก";
-      try {
-        if (messageEvent.source.type === "group" && userId !== "unknown") {
-          const profile = await client.getGroupMemberProfile(groupId, userId);
-          userName = profile.displayName;
-        } else if (userId !== "unknown") {
-          const profile = await client.getProfile(userId);
-          userName = profile.displayName;
-        }
-      } catch {
-        // Use default name if profile fetch fails
-      }
+      // Use cached name or default — never block on profile fetch
+      const cachedName = profileCache.get(userId);
+      const userName = cachedName ?? "สมาชิก";
 
       console.log(`[Webhook] ${userName}: ${textMessage.text}`);
 
-      // Run ack (fast) and graph (slow) in parallel
+      // Fire-and-forget: populate profile cache for next time
+      if (!cachedName && userId !== "unknown") {
+        (async () => {
+          try {
+            if (
+              messageEvent.source.type === "group" &&
+              messageEvent.source.groupId
+            ) {
+              const profile = await client.getGroupMemberProfile(
+                messageEvent.source.groupId,
+                userId,
+              );
+              profileCache.set(userId, profile.displayName);
+            } else {
+              const profile = await client.getProfile(userId);
+              profileCache.set(userId, profile.displayName);
+            }
+          } catch {
+            // Profile fetch failed — will retry next message
+          }
+        })();
+      }
+
+      // Start ack IMMEDIATELY (don't wait for profile fetch)
+      // Use AbortController to timeout ack LLM after 5 seconds
       const ackPromise = (async () => {
         try {
-          const ackMessages = await generateAckMessages(
-            textMessage.text,
-            userName,
-          );
-          if (messageEvent.replyToken) {
+          const ackWithTimeout = Promise.race([
+            generateAckMessages(textMessage.text, userName),
+            new Promise<null>((_, reject) =>
+              setTimeout(() => reject(new Error("Ack LLM timeout")), 5000),
+            ),
+          ]);
+
+          const ackMessages = await ackWithTimeout;
+          if (ackMessages && messageEvent.replyToken) {
             await client.replyMessage({
               replyToken: messageEvent.replyToken,
               messages: ackMessages,
@@ -134,4 +156,15 @@ app.get("/", (_req, res) => {
 app.listen(config.port, () => {
   console.log(`🏠 น้องบ้าน Family Bot v2 running on port ${config.port}`);
   startReminderChecker();
+
+  // Warm up LLM connections — pre-establish HTTP/2 + TLS to Anthropic API
+  const warmup = new ChatAnthropic({
+    model: "claude-haiku-4-5-20251001",
+    anthropicApiKey: config.anthropic.apiKey,
+    maxTokens: 1,
+  });
+  warmup
+    .invoke([{ role: "user", content: "hi" }])
+    .then(() => console.log("🔌 LLM connection warmed up"))
+    .catch(() => console.warn("⚠️ LLM warmup failed (will connect on first request)"));
 });

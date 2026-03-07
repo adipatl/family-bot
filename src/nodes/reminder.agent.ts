@@ -5,6 +5,9 @@ import {
   listReminders,
 } from "../services/firestore.service.js";
 import type { BotState } from "../graph/state.js";
+import { createLogger } from "../logger.js";
+
+const log = createLogger("reminder-agent");
 
 const llm = createLLM({ model: "claude-sonnet-4-6", maxTokens: 1000 });
 
@@ -81,7 +84,7 @@ export async function reminderAgent(
       replyText: `🔔 ตั้งเตือนแล้วค่ะ\n📌 ${parsed.message}\n⏰ ${dueStr}`,
     };
   } catch (err) {
-    console.error("[ReminderAgent] Error:", err);
+    log.error({ requestId: state.requestId, err }, "Reminder agent failed");
     return {
       replyText: "อุ๊ปส์ คุกกี้ตั้งเตือนไม่ได้อ่ะ ลองใหม่อีกทีนะคับ 🐥",
       error: String(err),

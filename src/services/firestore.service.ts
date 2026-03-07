@@ -1,6 +1,9 @@
 import admin from "firebase-admin";
 import fs from "fs";
 import { config } from "../config/index.js";
+import { createLogger } from "../logger.js";
+
+const log = createLogger("firestore");
 
 let db: admin.firestore.Firestore;
 
@@ -44,6 +47,7 @@ export async function addNote(
     groupId,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });
+  log.debug({ noteId: ref.id }, "Note created");
   return ref.id;
 }
 
@@ -91,6 +95,7 @@ export async function addReminder(
     notified: false,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });
+  log.debug({ reminderId: ref.id }, "Reminder created");
   return ref.id;
 }
 

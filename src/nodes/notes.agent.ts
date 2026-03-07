@@ -1,5 +1,8 @@
 import { addNote, listNotes } from "../services/firestore.service.js";
 import type { BotState } from "../graph/state.js";
+import { createLogger } from "../logger.js";
+
+const log = createLogger("notes-agent");
 
 const LIST_PATTERN = /ดูโน้ต|ดู note|รายการโน้ต|โน้ตทั้งหมด|list note/i;
 
@@ -39,7 +42,7 @@ export async function notesAgent(
       replyText: `📝 จดไว้แล้วค่ะ: "${noteText}"`,
     };
   } catch (err) {
-    console.error("[NotesAgent] Error:", err);
+    log.error({ requestId: state.requestId, err }, "Notes agent failed");
     return {
       replyText: "อุ๊ปส์ คุกกี้จดไม่ได้อ่ะ ลองใหม่อีกทีนะคับ 🐥",
       error: String(err),

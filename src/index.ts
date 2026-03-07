@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import express from "express";
 import {
   middleware,
@@ -11,6 +12,9 @@ import { getGraph } from "./graph/index.js";
 import { startReminderChecker } from "./services/reminder-checker.js";
 import { generateAckMessages } from "./services/ack.service.js";
 import { createLLM } from "./llm.js";
+import { createLogger } from "./logger.js";
+
+const log = createLogger("webhook");
 
 const app = express();
 
@@ -74,7 +78,10 @@ app.post(
       const cachedName = profileCache.get(userId);
       const userName = cachedName ?? "สมาชิก";
 
-      console.log(`[Webhook] ${userName}: ${textMessage.text}`);
+      const requestId = crypto.randomUUID().slice(0, 8);
+
+      log.info({ requestId, userId, groupId, messageLength: userMessage.length }, "Message received");
+      log.debug({ requestId, userMessage }, "Message content");
 
       // Fire-and-forget: populate profile cache for next time
       if (!cachedName && userId !== "unknown") {
@@ -93,8 +100,8 @@ app.post(
               const profile = await client.getProfile(userId);
               profileCache.set(userId, profile.displayName);
             }
-          } catch {
-            // Profile fetch failed — will retry next message
+          } catch (err) {
+            log.warn({ requestId, userId, err }, "Profile fetch failed");
           }
         })();
       }
@@ -112,16 +119,19 @@ app.post(
           }
           return false;
         } catch (err) {
-          console.error("[Webhook] Ack failed:", err);
+          log.warn({ requestId, err }, "Ack reply failed");
           return false;
         }
       })();
+
+      const startTime = Date.now();
 
       const graphPromise = graph.invoke({
         userMessage,
         userName,
         userId,
         groupId,
+        requestId,
       });
 
       const [ackSent, graphResult] = await Promise.allSettled([
@@ -129,12 +139,14 @@ app.post(
         graphPromise,
       ]);
 
+      const durationMs = Date.now() - startTime;
       const target = groupId ?? userId;
 
       if (graphResult.status === "fulfilled") {
         const result = graphResult.value;
-        console.log(
-          `[Webhook] Routed to: ${result.routedTo}, Reply: ${result.replyText?.substring(0, 50)}...`,
+        log.info(
+          { requestId, routedTo: result.routedTo, durationMs, replyLength: result.replyText?.length },
+          "Response sent",
         );
 
         if (result.replyText) {
@@ -144,9 +156,9 @@ app.post(
           });
         }
       } else {
-        console.error(
-          "[Webhook] Graph invocation error:",
-          graphResult.reason,
+        log.error(
+          { requestId, err: graphResult.reason, durationMs },
+          "Graph invocation failed",
         );
 
         await client.pushMessage({
@@ -170,13 +182,13 @@ app.get("/", (_req, res) => {
 
 // Start server
 app.listen(config.port, () => {
-  console.log(`🏠 น้องบ้าน Family Bot v2 running on port ${config.port}`);
+  log.info({ port: config.port }, "Family Bot v2 started");
   startReminderChecker();
 
   // Warm up LLM connections — pre-establish HTTP/2 + TLS to Anthropic API
   const warmup = createLLM({ maxTokens: 1 });
   warmup
     .invoke([{ role: "user", content: "hi" }])
-    .then(() => console.log("🔌 LLM connection warmed up"))
-    .catch(() => console.warn("⚠️ LLM warmup failed (will connect on first request)"));
+    .then(() => log.info("LLM connection warmed up"))
+    .catch(() => log.warn("LLM warmup failed (will connect on first request)"));
 });

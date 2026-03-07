@@ -2,6 +2,9 @@ import { loadPrompt } from "../prompts/loader.js";
 import { createLLM } from "../llm.js";
 import { addEvent, getEvents } from "../services/calendar.service.js";
 import type { BotState } from "../graph/state.js";
+import { createLogger } from "../logger.js";
+
+const log = createLogger("calendar-agent");
 
 const llm = createLLM({ maxTokens: 1000 });
 
@@ -118,7 +121,7 @@ export async function calendarAgent(
       replyText: `📅 นัดหมาย:\n${lines.join("\n")}`,
     };
   } catch (err) {
-    console.error("[CalendarAgent] Error:", err);
+    log.error({ requestId: state.requestId, err }, "Calendar agent failed");
     return {
       replyText: "อุ๊ปส์ คุกกี้จัดการปฏิทินไม่ได้อ่ะ ลองใหม่อีกทีนะคับ 🐥",
       error: String(err),

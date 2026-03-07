@@ -1,6 +1,9 @@
 import { google, calendar_v3 } from "googleapis";
 import fs from "fs";
 import { config } from "../config/index.js";
+import { createLogger } from "../logger.js";
+
+const log = createLogger("calendar-service");
 
 let calendarClient: calendar_v3.Calendar;
 
@@ -42,7 +45,9 @@ export async function addEvent(event: CalendarEvent): Promise<string> {
       },
     },
   });
-  return res.data.id ?? "";
+  const eventId = res.data.id ?? "";
+  log.debug({ eventId }, "Calendar event created");
+  return eventId;
 }
 
 export async function getEvents(

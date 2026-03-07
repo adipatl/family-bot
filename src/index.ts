@@ -6,11 +6,11 @@ import {
   type TextEventMessage,
   type MessageEvent,
 } from "@line/bot-sdk";
-import { ChatAnthropic } from "@langchain/anthropic";
 import { config } from "./config/index.js";
 import { getGraph } from "./graph/index.js";
 import { startReminderChecker } from "./services/reminder-checker.js";
 import { generateAckMessages } from "./services/ack.service.js";
+import { createLLM } from "./llm.js";
 
 const app = express();
 
@@ -75,19 +75,11 @@ app.post(
         })();
       }
 
-      // Start ack IMMEDIATELY (don't wait for profile fetch)
-      // Use AbortController to timeout ack LLM after 5 seconds
+      // Send ack immediately — static messages, no LLM needed
       const ackPromise = (async () => {
         try {
-          const ackWithTimeout = Promise.race([
-            generateAckMessages(textMessage.text, userName),
-            new Promise<null>((_, reject) =>
-              setTimeout(() => reject(new Error("Ack LLM timeout")), 5000),
-            ),
-          ]);
-
-          const ackMessages = await ackWithTimeout;
-          if (ackMessages && messageEvent.replyToken) {
+          const ackMessages = generateAckMessages(textMessage.text);
+          if (messageEvent.replyToken) {
             await client.replyMessage({
               replyToken: messageEvent.replyToken,
               messages: ackMessages,
@@ -158,11 +150,7 @@ app.listen(config.port, () => {
   startReminderChecker();
 
   // Warm up LLM connections — pre-establish HTTP/2 + TLS to Anthropic API
-  const warmup = new ChatAnthropic({
-    model: "claude-haiku-4-5-20251001",
-    anthropicApiKey: config.anthropic.apiKey,
-    maxTokens: 1,
-  });
+  const warmup = createLLM({ maxTokens: 1 });
   warmup
     .invoke([{ role: "user", content: "hi" }])
     .then(() => console.log("🔌 LLM connection warmed up"))

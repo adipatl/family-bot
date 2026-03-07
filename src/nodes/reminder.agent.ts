@@ -1,18 +1,12 @@
-import { ChatAnthropic } from "@langchain/anthropic";
-import { config } from "../config/index.js";
 import { loadPrompt } from "../prompts/loader.js";
+import { createLLM } from "../llm.js";
 import {
   addReminder,
   listReminders,
 } from "../services/firestore.service.js";
 import type { BotState } from "../graph/state.js";
 
-const llm = new ChatAnthropic({
-  model: "claude-sonnet-4-6",
-  anthropicApiKey: config.anthropic.apiKey,
-  maxTokens: 300,
-  temperature: 0,
-});
+const llm = createLLM({ model: "claude-sonnet-4-6", maxTokens: 300 });
 
 const LIST_PATTERN = /เช็ค reminder|ดู reminder|ดูเตือน|รายการเตือน|เตือนอะไรบ้าง/i;
 

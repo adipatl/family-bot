@@ -38,7 +38,7 @@ function classifyByKeyword(
 
 // --- LLM classification (fallback) ---
 
-const llm = createLLM({ maxTokens: 100 });
+const llm = createLLM({ maxTokens: 100, model: "claude-sonnet-4-6" });
 
 async function classifyByLLM(
   message: string,

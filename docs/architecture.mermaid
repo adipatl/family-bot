@@ -1,0 +1,41 @@
+graph TD
+    START([START]) --> supervisor
+
+    supervisor{Supervisor<br/>Keyword + LLM Classify}
+
+    supervisor -->|calendar_agent| calendar[Calendar Agent<br/>Google Calendar API]
+    supervisor -->|notes_agent| notes[Notes Agent<br/>Firestore]
+    supervisor -->|reminder_agent| reminder[Reminder Agent<br/>Firestore + LLM Parse]
+    supervisor -->|homework_agent| homework[Homework Agent<br/>Claude Sonnet]
+    supervisor -->|chat_agent| chat[Chat Agent<br/>Claude Haiku]
+
+    calendar --> END([END])
+    notes --> END
+    reminder --> END
+    homework --> END
+    chat --> END
+
+    subgraph External Services
+        GCal[(Google Calendar)]
+        FS[(Firestore)]
+        Claude[Claude API]
+    end
+
+    calendar -.-> GCal
+    notes -.-> FS
+    reminder -.-> FS
+    reminder -.-> Claude
+    homework -.-> Claude
+    chat -.-> Claude
+    calendar -.-> Claude
+    supervisor -.->|fallback| Claude
+
+    subgraph LINE Platform
+        LINE[LINE Webhook] --> START
+        END --> LINE_Reply[LINE Reply]
+    end
+
+    subgraph Background
+        ReminderChecker[Reminder Checker<br/>60s polling] -.-> FS
+        ReminderChecker -.-> LINE_Push[LINE Push Message]
+    end

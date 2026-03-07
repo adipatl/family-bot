@@ -39,6 +39,12 @@ export async function calendarAgent(
 
     const parsed = JSON.parse(jsonMatch[0]);
 
+    if (parsed.action === "date_info") {
+      return {
+        replyText: `📅 วันนี้คือ ${today} ค่ะ`,
+      };
+    }
+
     if (parsed.action === "add") {
       const start = new Date(`${parsed.date}T${parsed.startTime}:00+07:00`);
       const end = new Date(`${parsed.date}T${parsed.endTime}:00+07:00`);

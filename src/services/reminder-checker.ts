@@ -1,5 +1,5 @@
 import { messagingApi } from "@line/bot-sdk";
-import { getDueReminders, markReminderNotified } from "./firestore.service.js";
+import { getDueReminders, deleteReminder } from "./firestore.service.js";
 import { config } from "../config/index.js";
 
 const POLL_INTERVAL_MS = 60_000; // Check every minute
@@ -27,7 +27,7 @@ export function startReminderChecker(): void {
           messages: [{ type: "text", text }],
         });
 
-        await markReminderNotified(reminder.id!);
+        await deleteReminder(reminder.id!);
         console.log(`Notified reminder: ${reminder.id}`);
       }
     } catch (err) {

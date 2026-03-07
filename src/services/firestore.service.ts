@@ -116,9 +116,6 @@ export async function getDueReminders(): Promise<Reminder[]> {
   return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Reminder);
 }
 
-export async function markReminderNotified(reminderId: string): Promise<void> {
-  await getDb()
-    .collection("reminders")
-    .doc(reminderId)
-    .update({ notified: true });
+export async function deleteReminder(reminderId: string): Promise<void> {
+  await getDb().collection("reminders").doc(reminderId).delete();
 }

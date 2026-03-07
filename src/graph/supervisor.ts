@@ -1,6 +1,5 @@
-import { ChatAnthropic } from "@langchain/anthropic";
-import { config } from "../config/index.js";
 import { loadPrompt } from "../prompts/loader.js";
+import { createLLM } from "../llm.js";
 import type { BotState, AgentName } from "./state.js";
 
 // --- Keyword patterns (Thai) ---
@@ -39,12 +38,7 @@ function classifyByKeyword(
 
 // --- LLM classification (fallback) ---
 
-const llm = new ChatAnthropic({
-  model: "claude-haiku-4-5-20251001",
-  anthropicApiKey: config.anthropic.apiKey,
-  maxTokens: 100,
-  temperature: 0,
-});
+const llm = createLLM({ maxTokens: 100 });
 
 async function classifyByLLM(
   message: string,

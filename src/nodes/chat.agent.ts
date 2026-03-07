@@ -1,14 +1,8 @@
-import { ChatAnthropic } from "@langchain/anthropic";
-import { config } from "../config/index.js";
 import { loadPrompt } from "../prompts/loader.js";
+import { createLLM } from "../llm.js";
 import type { BotState } from "../graph/state.js";
 
-const llm = new ChatAnthropic({
-  model: "claude-haiku-4-5-20251001",
-  anthropicApiKey: config.anthropic.apiKey,
-  maxTokens: 300,
-  temperature: 0.7,
-});
+const llm = createLLM({ maxTokens: 300, temperature: 0.7 });
 
 export async function chatAgent(
   state: BotState,

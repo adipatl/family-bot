@@ -127,3 +127,20 @@ export async function markReminderNotified(reminderId: string): Promise<void> {
     .doc(reminderId)
     .update({ notified: true });
 }
+
+export async function cancelRemindersByKeyword(
+  groupId: string,
+  keyword: string,
+): Promise<Reminder[]> {
+  const all = await listReminders(groupId);
+  const matched = all.filter((r) =>
+    r.message.toLowerCase().includes(keyword.toLowerCase()),
+  );
+
+  for (const r of matched) {
+    await markReminderNotified(r.id!);
+  }
+
+  log.debug({ groupId, keyword, cancelledCount: matched.length }, "Reminders cancelled by keyword");
+  return matched;
+}

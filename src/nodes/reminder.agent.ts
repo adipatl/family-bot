@@ -1,5 +1,5 @@
 import { loadPrompt } from "../prompts/loader.js";
-import { createLLM } from "../llm.js";
+import { createLLM, invokeLLM } from "../llm.js";
 import {
   addReminder,
   listReminders,
@@ -50,7 +50,7 @@ export async function reminderAgent(
 
     log.info({ requestId: state.requestId, prompt: "reminder", userContent: userMessage.slice(0, 200) }, "LLM request");
 
-    const parseResponse = await llm.invoke([
+    const { response: parseResponse, anthropicRequestId } = await invokeLLM(llm, [
       {
         role: "system",
         content: loadPrompt("reminder", { NOW: now }),
@@ -63,7 +63,7 @@ export async function reminderAgent(
         ? parseResponse.content
         : String(parseResponse.content);
 
-    log.info({ requestId: state.requestId, llmResponse: text.slice(0, 300) }, "Reminder agent LLM response");
+    log.info({ requestId: state.requestId, anthropicRequestId, llmResponse: text.slice(0, 300) }, "Reminder agent LLM response");
 
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {

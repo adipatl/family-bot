@@ -1,5 +1,5 @@
 import { loadPrompt } from "../prompts/loader.js";
-import { createLLM } from "../llm.js";
+import { createLLM, invokeLLM } from "../llm.js";
 import type { BotState } from "../graph/state.js";
 import { createLogger } from "../logger.js";
 
@@ -23,7 +23,7 @@ export async function polishNode(
     const userContent = `Polish this message in Kookie's voice. Output language: ${language === "th" ? "Thai" : "English"}.\n\n${replyText}`;
     log.info({ requestId: state.requestId, prompt: "polish", userContent: userContent.slice(0, 200) }, "LLM request");
 
-    const response = await llm.invoke([
+    const { response, anthropicRequestId } = await invokeLLM(llm, [
       { role: "system", content: loadPrompt("polish") },
       {
         role: "user",
@@ -36,7 +36,7 @@ export async function polishNode(
         ? response.content
         : String(response.content);
 
-    log.info({ requestId: state.requestId, outputLength: polished.length, polishedText: polished.slice(0, 200) }, "Polish completed");
+    log.info({ requestId: state.requestId, anthropicRequestId, outputLength: polished.length, polishedText: polished.slice(0, 200) }, "Polish completed");
 
     return { replyText: polished };
   } catch (err) {

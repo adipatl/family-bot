@@ -1,5 +1,5 @@
 import { loadPrompt } from "../prompts/loader.js";
-import { createLLM } from "../llm.js";
+import { createLLM, invokeLLM } from "../llm.js";
 import type { BotState } from "../graph/state.js";
 import { createLogger } from "../logger.js";
 
@@ -26,7 +26,7 @@ export async function homeworkAgent(
     const userContent = `${userName}: ${userMessage}`;
     log.info({ requestId: state.requestId, prompt: "homework", userContent: userContent.slice(0, 200) }, "LLM request");
 
-    const response = await llm.invoke([
+    const { response, anthropicRequestId } = await invokeLLM(llm, [
       {
         role: "system",
         content: loadPrompt("homework", { TODAY: today, LANGUAGE: language === "th" ? "Thai" : "English" }),
@@ -42,7 +42,7 @@ export async function homeworkAgent(
         ? response.content
         : String(response.content);
 
-    log.info({ requestId: state.requestId, replyText: text.slice(0, 200) }, "Homework agent LLM response");
+    log.info({ requestId: state.requestId, anthropicRequestId, replyText: text.slice(0, 200) }, "Homework agent LLM response");
 
     return { replyText: text };
   } catch (err) {

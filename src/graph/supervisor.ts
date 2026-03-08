@@ -14,10 +14,6 @@ const KEYWORD_PATTERNS: { agent: AgentName; pattern: RegExp }[] = [
       /ปฏิทิน|นัดหมาย|ลงตาราง|วันนี้มี|พรุ่งนี้มี|มีนัด|ลงวัน|schedule|วันนี้วันอะไร|วันที่เท่าไหร่/i,
   },
   {
-    agent: "notes_agent",
-    pattern: /โน้ต|memo|บันทึก|จดไว้|ดูโน้ต|note/i,
-  },
-  {
     agent: "reminder_agent",
     pattern: /เตือน|remind|แจ้งเตือน|alarm|ตั้งเตือน/i,
   },
@@ -65,7 +61,6 @@ interface ClassifierResponse {
 
 const VALID_AGENTS: AgentName[] = [
   "calendar_agent",
-  "notes_agent",
   "reminder_agent",
   "homework_agent",
   "chat_agent",

@@ -76,6 +76,8 @@ const llm = createLLM({ maxTokens: 256, model: "claude-sonnet-4-6" });
 async function classifyByLLM(
   message: string,
 ): Promise<{ agent: AgentName; confidence: number; reasoning: string }> {
+  log.info({ prompt: "supervisor", userContent: message.slice(0, 200) }, "LLM request");
+
   const response = await llm.invoke([
     { role: "system", content: loadPrompt("supervisor") },
     { role: "user", content: message },

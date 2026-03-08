@@ -17,6 +17,6 @@ export function createLLM(opts: {
     maxTokens: opts.maxTokens,
     temperature: opts.temperature ?? 0,
     maxRetries: 3,
-    clientOptions: { timeout: opts.timeout ?? 15_000 },
+    clientOptions: { timeout: opts.timeout ?? 30_000 },
   });
 }

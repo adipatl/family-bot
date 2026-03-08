@@ -48,6 +48,8 @@ export async function reminderAgent(
     // Add reminder — use Claude to parse when and what
     const now = new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
 
+    log.info({ requestId: state.requestId, prompt: "reminder", userContent: userMessage.slice(0, 200) }, "LLM request");
+
     const parseResponse = await llm.invoke([
       {
         role: "system",

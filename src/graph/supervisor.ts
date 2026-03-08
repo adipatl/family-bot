@@ -71,7 +71,7 @@ const VALID_AGENTS: AgentName[] = [
   "chat_agent",
 ];
 
-const llm = createLLM({ maxTokens: 256, model: "claude-sonnet-4-6" });
+const llm = createLLM({ maxTokens: 256 });
 
 async function classifyByLLM(
   message: string,
@@ -90,22 +90,25 @@ async function classifyByLLM(
 
   log.info({ llmResponse: text.slice(0, 300) }, "Supervisor LLM response");
 
-  // Parse JSON response from updated prompt
-  try {
-    const parsed: ClassifierResponse = JSON.parse(text);
+  // Extract JSON from possible markdown code fences (e.g. ```json ... ```)
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    try {
+      const parsed: ClassifierResponse = JSON.parse(jsonMatch[0]);
 
-    if (VALID_AGENTS.includes(parsed.agent)) {
-      return {
-        agent: parsed.agent,
-        confidence: parsed.confidence === "high" ? 0.85 : 0.5,
-        reasoning: parsed.reasoning ?? "",
-      };
-    }
-  } catch {
-    // JSON parse failed — try simple text matching as last resort
-    const matched = VALID_AGENTS.find((a) => text.includes(a));
-    if (matched) {
-      return { agent: matched, confidence: 0.5, reasoning: "fallback-text-match" };
+      if (VALID_AGENTS.includes(parsed.agent)) {
+        return {
+          agent: parsed.agent,
+          confidence: parsed.confidence === "high" ? 0.85 : 0.5,
+          reasoning: parsed.reasoning ?? "",
+        };
+      }
+    } catch {
+      // JSON parse failed — try simple text matching as last resort
+      const matched = VALID_AGENTS.find((a) => text.includes(a));
+      if (matched) {
+        return { agent: matched, confidence: 0.5, reasoning: "fallback-text-match" };
+      }
     }
   }
 
@@ -150,4 +153,12 @@ export async function supervisorNode(
       confidence: 0.1,
     };
   }
+}
+
+/** Pre-establish TLS/HTTP2 connection to Anthropic API on startup. */
+export function warmupSupervisor() {
+  llm
+    .invoke([{ role: "user", content: "hi" }])
+    .then(() => log.info("Supervisor LLM warmed up"))
+    .catch(() => log.warn("Supervisor LLM warmup failed"));
 }

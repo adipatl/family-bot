@@ -5,7 +5,7 @@ import { createLogger } from "../logger.js";
 
 const log = createLogger("reminder-checker");
 
-const POLL_INTERVAL_MS = 60_000; // Check every minute
+const POLL_INTERVAL_MS = 900_000; // Check every 15 minutes
 
 let intervalId: ReturnType<typeof setInterval> | null = null;
 
@@ -16,7 +16,7 @@ export function startReminderChecker(): void {
     channelAccessToken: config.line.channelAccessToken,
   });
 
-  log.info("Reminder checker started (polling every 60s)");
+  log.info("Reminder checker started (polling every 15m)");
 
   intervalId = setInterval(async () => {
     try {

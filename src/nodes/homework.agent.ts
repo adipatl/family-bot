@@ -43,6 +43,7 @@ export async function homeworkAgent(
         : String(response.content);
 
     log.info({ requestId: state.requestId, anthropicRequestId, replyText: text.slice(0, 200) }, "Homework agent LLM response");
+    log.info({ requestId: state.requestId, action: "answer", replyLength: text.length }, "Homework parsed action");
 
     return { replyText: text };
   } catch (err) {

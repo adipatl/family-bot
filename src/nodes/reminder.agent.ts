@@ -42,7 +42,9 @@ export async function reminderAgent(
   try {
     // Fast-path: list reminders without LLM call
     if (LIST_PATTERN.test(userMessage)) {
+      log.info({ requestId: state.requestId, service: "listReminders", groupId }, "Calling listReminders (fast-path)");
       const reminders = await listReminders(groupId);
+      log.info({ requestId: state.requestId, reminderCount: reminders.length }, "listReminders result");
       return { replyText: formatReminderList(reminders) };
     }
 
@@ -76,8 +78,8 @@ export async function reminderAgent(
     const parsed = JSON.parse(jsonMatch[0]);
 
     log.info(
-      { requestId: state.requestId, action: parsed.action, confidence: parsed.confidence },
-      "Reminder parsed intent",
+      { requestId: state.requestId, action: parsed.action, confidence: parsed.confidence, message: parsed.message?.slice(0, 100), dueAt: parsed.dueAt, searchKeyword: parsed.searchKeyword },
+      "Reminder parsed action",
     );
 
     switch (parsed.action) {
@@ -94,7 +96,9 @@ export async function reminderAgent(
           "Setting reminder",
         );
 
+        log.info({ requestId: state.requestId, service: "addReminder", reminderMessage: parsed.message, dueAt: parsed.dueAt }, "Calling addReminder");
         await addReminder(parsed.message, dueAt, userId, userName, groupId);
+        log.info({ requestId: state.requestId }, "addReminder result: success");
 
         const dueStr = dueAt.toLocaleString("th-TH", {
           timeZone: "Asia/Bangkok",
@@ -111,7 +115,9 @@ export async function reminderAgent(
       }
 
       case "list": {
+        log.info({ requestId: state.requestId, service: "listReminders", groupId }, "Calling listReminders");
         const reminders = await listReminders(groupId);
+        log.info({ requestId: state.requestId, reminderCount: reminders.length }, "listReminders result");
         return { replyText: formatReminderList(reminders) };
       }
 
@@ -122,7 +128,9 @@ export async function reminderAgent(
           };
         }
 
+        log.info({ requestId: state.requestId, service: "cancelRemindersByKeyword", keyword: parsed.searchKeyword }, "Calling cancelRemindersByKeyword");
         const cancelled = await cancelRemindersByKeyword(groupId, parsed.searchKeyword);
+        log.info({ requestId: state.requestId, cancelledCount: cancelled.length }, "cancelRemindersByKeyword result");
 
         if (cancelled.length === 0) {
           return {

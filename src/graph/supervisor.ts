@@ -90,6 +90,7 @@ async function classifyByLLM(
   if (jsonMatch) {
     try {
       const parsed: ClassifierResponse = JSON.parse(jsonMatch[0]);
+      log.info({ agent: parsed.agent, confidence: parsed.confidence, reasoning: parsed.reasoning }, "Supervisor parsed action");
 
       if (VALID_AGENTS.includes(parsed.agent)) {
         return {
@@ -102,11 +103,13 @@ async function classifyByLLM(
       // JSON parse failed — try simple text matching as last resort
       const matched = VALID_AGENTS.find((a) => text.includes(a));
       if (matched) {
+        log.info({ agent: matched, fallback: true }, "Supervisor parsed action");
         return { agent: matched, confidence: 0.5, reasoning: "fallback-text-match" };
       }
     }
   }
 
+  log.info({ agent: "chat_agent", reason: "no-match" }, "Supervisor parsed action");
   return { agent: "chat_agent", confidence: 0.3, reasoning: "no-match" };
 }
 

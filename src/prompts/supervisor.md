@@ -7,7 +7,7 @@ Respond with ONLY a valid JSON object. No other text.
 ## JSON Schema
 
 {
-  "agent": "calendar_agent" | "notes_agent" | "reminder_agent" | "homework_agent" | "chat_agent",
+  "agent": "calendar_agent" | "reminder_agent" | "homework_agent" | "chat_agent",
   "confidence": "high" | "low",
   "reasoning": "One-line English explanation for debugging"
 }
@@ -17,7 +17,6 @@ Respond with ONLY a valid JSON object. No other text.
 | Agent            | Use when...                                                              |
 |------------------|--------------------------------------------------------------------------|
 | calendar_agent   | Creating, querying, updating, deleting events, or asking about dates     |
-| notes_agent      | Saving notes, memos, lists                                               |
 | reminder_agent   | Setting time-based alerts ("เตือนด้วย", "remind me at...")               |
 | homework_agent   | Academic questions, math, science, school-related explanations            |
 | chat_agent       | Greetings, casual chat, general questions, anything that doesn't fit above |
@@ -34,10 +33,8 @@ Respond with ONLY a valid JSON object. No other text.
 |----------------------------------------------------|------------------|----------------------------------------------|
 | "วันนี้วันอะไร" "วันที่เท่าไหร่"                     | calendar_agent   | Date info is handled by calendar agent       |
 | "วันนี้มีนัดอะไร" "ตารางวันนี้"                      | calendar_agent   | Querying schedule                            |
-| "จดนัดหมอฟันวันเสาร์" ("จด" + event)                | calendar_agent   | "จด" here = schedule, not notes              |
-| "จดไว้ด้วยว่า..." "โน้ตหน่อย" (no date/time)         | notes_agent      | Saving info, not scheduling                  |
+| "จดนัดหมอฟันวันเสาร์" ("จด" + event)                | calendar_agent   | "จด" here = schedule              |
 | "เตือนด้วยตอน 5 โมง"                                | reminder_agent   | Explicit time-based alert                    |
-| "พรุ่งนี้อย่าลืม..." (no alarm time)                 | notes_agent      | No trigger time = note, not reminder         |
 | "ลงนัดแล้วเตือนด้วย" (multi-intent)                 | calendar_agent   | Calendar is dominant; reminder handled later |
 | "9x7 เท่ากับเท่าไหร่" "สอน fraction"                 | homework_agent   | Academic / calculation                       |
 | "กินอะไรดี" "สวัสดี" "เล่าเรื่องตลก"                  | chat_agent       | Casual / general                             |
@@ -49,9 +46,6 @@ User: "พรุ่งนี้ประชุมบ่ายสอง"
 
 User: "วันนี้วันอะไร"
 → {"agent":"calendar_agent","confidence":"high","reasoning":"Asking about today's date"}
-
-User: "ช่วยจดหน่อย ต้องซื้อนม ไข่ ขนมปัง"
-→ {"agent":"notes_agent","confidence":"high","reasoning":"Saving a shopping list"}
 
 User: "เตือนตอน 7 โมงว่าต้องออกจากบ้าน"
 → {"agent":"reminder_agent","confidence":"high","reasoning":"Set alarm at 7 AM"}

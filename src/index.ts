@@ -11,8 +11,8 @@ import { config } from "./config/index.js";
 import { getGraph } from "./graph/index.js";
 import { startReminderChecker } from "./services/reminder-checker.js";
 import { generateAckMessages } from "./services/ack.service.js";
-import { createLLM } from "./llm.js";
 import { createLogger } from "./logger.js";
+import { warmupSupervisor } from "./graph/supervisor.js";
 
 const log = createLogger("webhook");
 
@@ -190,10 +190,6 @@ app.listen(config.port, () => {
   log.info({ port: config.port }, "Family Bot v2 started");
   startReminderChecker();
 
-  // Warm up LLM connections — pre-establish HTTP/2 + TLS to Anthropic API
-  const warmup = createLLM({ maxTokens: 1 });
-  warmup
-    .invoke([{ role: "user", content: "hi" }])
-    .then(() => log.info("LLM connection warmed up"))
-    .catch(() => log.warn("LLM warmup failed (will connect on first request)"));
+  // Warm up the actual supervisor LLM — pre-establish HTTP/2 + TLS to Anthropic API
+  warmupSupervisor();
 });

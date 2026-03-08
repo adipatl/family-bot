@@ -18,6 +18,8 @@ export async function reminderAgent(
 ): Promise<Partial<BotState>> {
   const { userMessage, userId, userName, groupId } = state;
 
+  log.info({ requestId: state.requestId, userMessage: userMessage.slice(0, 200) }, "Reminder agent started");
+
   try {
     // List reminders
     if (LIST_PATTERN.test(userMessage)) {
@@ -59,6 +61,8 @@ export async function reminderAgent(
         ? parseResponse.content
         : String(parseResponse.content);
 
+    log.info({ requestId: state.requestId, llmResponse: text.slice(0, 300) }, "Reminder agent LLM response");
+
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       return {
@@ -68,6 +72,8 @@ export async function reminderAgent(
 
     const parsed = JSON.parse(jsonMatch[0]);
     const dueAt = new Date(parsed.dueAt);
+
+    log.info({ requestId: state.requestId, reminderMessage: parsed.message, dueAt: parsed.dueAt }, "Reminder parsed intent");
 
     await addReminder(parsed.message, dueAt, userId, userName, groupId);
 

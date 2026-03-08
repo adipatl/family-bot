@@ -13,6 +13,8 @@ export async function calendarAgent(
 ): Promise<Partial<BotState>> {
   const { userMessage, userName } = state;
 
+  log.info({ requestId: state.requestId, userMessage: userMessage.slice(0, 200) }, "Calendar agent started");
+
   try {
     const today = new Date().toLocaleDateString("th-TH", {
       weekday: "long",
@@ -35,12 +37,16 @@ export async function calendarAgent(
         ? parseResponse.content
         : String(parseResponse.content);
 
+    log.info({ requestId: state.requestId, llmResponse: text.slice(0, 300) }, "Calendar agent LLM response");
+
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       return { replyText: "ขอโทษค่ะ ไม่เข้าใจรายละเอียดนัดหมาย ลองบอกใหม่นะคะ" };
     }
 
     const parsed = JSON.parse(jsonMatch[0]);
+
+    log.info({ requestId: state.requestId, action: parsed.action, date: parsed.date, summary: parsed.summary }, "Calendar parsed intent");
 
     if (parsed.action === "date_info") {
       const todayISO = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Bangkok" });

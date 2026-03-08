@@ -17,6 +17,8 @@ export async function polishNode(
     return {};
   }
 
+  log.info({ requestId: state.requestId, inputLength: replyText.length }, "Polish started");
+
   try {
     const response = await llm.invoke([
       { role: "system", content: loadPrompt("polish") },
@@ -30,6 +32,8 @@ export async function polishNode(
       typeof response.content === "string"
         ? response.content
         : String(response.content);
+
+    log.info({ requestId: state.requestId, outputLength: polished.length, polishedText: polished.slice(0, 200) }, "Polish completed");
 
     return { replyText: polished };
   } catch (err) {

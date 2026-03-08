@@ -86,6 +86,8 @@ async function classifyByLLM(
       ? response.content.trim()
       : String(response.content);
 
+  log.info({ llmResponse: text.slice(0, 300) }, "Supervisor LLM response");
+
   // Parse JSON response from updated prompt
   try {
     const parsed: ClassifierResponse = JSON.parse(text);
@@ -119,7 +121,7 @@ export async function supervisorNode(
   const keywordResult = classifyByKeyword(message);
   if (keywordResult) {
     log.info(
-      { requestId: state.requestId, agent: keywordResult.agent, confidence: keywordResult.confidence, tier: "keyword" },
+      { requestId: state.requestId, userMessage: message.slice(0, 200), agent: keywordResult.agent, confidence: keywordResult.confidence, tier: "keyword" },
       "Routed",
     );
     return {
@@ -132,7 +134,7 @@ export async function supervisorNode(
   try {
     const llmResult = await classifyByLLM(message);
     log.info(
-      { requestId: state.requestId, agent: llmResult.agent, confidence: llmResult.confidence, reasoning: llmResult.reasoning, tier: "llm" },
+      { requestId: state.requestId, userMessage: message.slice(0, 200), agent: llmResult.agent, confidence: llmResult.confidence, reasoning: llmResult.reasoning, tier: "llm" },
       "Routed",
     );
     return {

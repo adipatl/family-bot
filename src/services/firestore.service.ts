@@ -62,8 +62,26 @@ export async function listNotes(groupId: string, limit = 10): Promise<Note[]> {
   return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Note);
 }
 
+export async function updateNote(noteId: string, newText: string): Promise<void> {
+  await getDb().collection("notes").doc(noteId).update({ text: newText });
+  log.debug({ noteId }, "Note updated");
+}
+
 export async function deleteNote(noteId: string): Promise<void> {
   await getDb().collection("notes").doc(noteId).delete();
+}
+
+export async function deleteNotesByGroup(groupId: string): Promise<number> {
+  const snap = await getDb()
+    .collection("notes")
+    .where("groupId", "==", groupId)
+    .get();
+
+  const batch = getDb().batch();
+  snap.docs.forEach((doc) => batch.delete(doc.ref));
+  await batch.commit();
+  log.debug({ groupId, count: snap.size }, "All notes deleted for group");
+  return snap.size;
 }
 
 // --- Reminders ---

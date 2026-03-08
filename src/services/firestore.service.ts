@@ -23,67 +23,6 @@ function getDb(): admin.firestore.Firestore {
   return db;
 }
 
-// --- Notes ---
-
-export interface Note {
-  id?: string;
-  text: string;
-  userId: string;
-  userName: string;
-  groupId: string;
-  createdAt: admin.firestore.Timestamp;
-}
-
-export async function addNote(
-  text: string,
-  userId: string,
-  userName: string,
-  groupId: string,
-): Promise<string> {
-  const ref = await getDb().collection("notes").add({
-    text,
-    userId,
-    userName,
-    groupId,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-  log.debug({ noteId: ref.id }, "Note created");
-  return ref.id;
-}
-
-export async function listNotes(groupId: string, limit = 10): Promise<Note[]> {
-  const snap = await getDb()
-    .collection("notes")
-    .where("groupId", "==", groupId)
-    .orderBy("createdAt", "desc")
-    .limit(limit)
-    .get();
-
-  return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Note);
-}
-
-export async function updateNote(noteId: string, newText: string): Promise<void> {
-  await getDb().collection("notes").doc(noteId).update({ text: newText });
-  log.debug({ noteId }, "Note updated");
-}
-
-export async function deleteNote(noteId: string): Promise<void> {
-  await getDb().collection("notes").doc(noteId).delete();
-}
-
-export async function deleteNotesByGroup(groupId: string): Promise<number> {
-  const snap = await getDb()
-    .collection("notes")
-    .where("groupId", "==", groupId)
-    .get();
-
-  const batch = getDb().batch();
-  snap.docs.forEach((doc) => batch.delete(doc.ref));
-  await batch.commit();
-  log.debug({ groupId, count: snap.size }, "All notes deleted for group");
-  return snap.size;
-}
-
 // --- Reminders ---
 
 export interface Reminder {

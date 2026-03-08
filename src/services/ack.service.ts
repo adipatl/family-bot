@@ -9,10 +9,6 @@ const CATEGORY_PATTERNS: { category: string; pattern: RegExp }[] = [
       /ปฏิทิน|นัด|ลงตาราง|กี่โมง|วันไหน|ไปหาหมอ|นัดหมาย|ตาราง|วันนี้มี|พรุ่งนี้มี|มีนัด|ลงวัน|schedule|calendar/i,
   },
   {
-    category: "notes",
-    pattern: /จด|โน้ต|memo|บันทึก|จดไว้|ดูโน้ต|note|รายการ/i,
-  },
-  {
     category: "reminder",
     pattern: /เตือน|remind|แจ้งเตือน|alarm|ตั้งเตือน|เช็ค reminder/i,
   },
@@ -36,18 +32,6 @@ const ACK_MESSAGES: Record<string, { th: string[]; en: string[] }> = {
       "Kookie's checking the calendar~",
       "Let me look at the schedule!",
       "Hang on, checking the calendar~",
-    ],
-  },
-  notes: {
-    th: [
-      "รับทราบค่ะ คุกกี้จดให้เลย",
-      "โอเค คุกกี้จัดการโน้ตให้เลยนะคะ",
-      "ได้เลยค่ะ คุกกี้กำลังจดอยู่",
-    ],
-    en: [
-      "On it! Kookie's writing it down~",
-      "Got it! Taking notes~",
-      "Noted! Kookie's on it~",
     ],
   },
   reminder: {

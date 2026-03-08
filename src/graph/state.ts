@@ -2,7 +2,6 @@ import { Annotation } from "@langchain/langgraph";
 
 export const AgentNames = [
   "calendar_agent",
-  "notes_agent",
   "reminder_agent",
   "homework_agent",
   "chat_agent",

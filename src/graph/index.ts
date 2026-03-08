@@ -2,7 +2,6 @@ import { StateGraph, START, END } from "@langchain/langgraph";
 import { BotStateAnnotation } from "./state.js";
 import { supervisorNode } from "./supervisor.js";
 import { calendarAgent } from "../nodes/calendar.agent.js";
-import { notesAgent } from "../nodes/notes.agent.js";
 import { reminderAgent } from "../nodes/reminder.agent.js";
 import { homeworkAgent } from "../nodes/homework.agent.js";
 import { chatAgent } from "../nodes/chat.agent.js";
@@ -12,7 +11,6 @@ export function buildGraph() {
   const graph = new StateGraph(BotStateAnnotation)
     .addNode("supervisor", supervisorNode)
     .addNode("calendar_agent", calendarAgent)
-    .addNode("notes_agent", notesAgent)
     .addNode("reminder_agent", reminderAgent)
     .addNode("homework_agent", homeworkAgent)
     .addNode("chat_agent", chatAgent)
@@ -20,7 +18,6 @@ export function buildGraph() {
     .addEdge(START, "supervisor")
     // All agents → polish → END
     .addEdge("calendar_agent", "polish")
-    .addEdge("notes_agent", "polish")
     .addEdge("reminder_agent", "polish")
     .addEdge("homework_agent", "polish")
     .addEdge("chat_agent", "polish")
@@ -30,7 +27,6 @@ export function buildGraph() {
       (state) => state.routedTo,
       {
         calendar_agent: "calendar_agent",
-        notes_agent: "notes_agent",
         reminder_agent: "reminder_agent",
         homework_agent: "homework_agent",
         chat_agent: "chat_agent",

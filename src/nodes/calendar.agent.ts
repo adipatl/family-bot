@@ -24,13 +24,11 @@ export async function calendarAgent(
       timeZone: "Asia/Bangkok",
     });
 
-    log.info({ requestId: state.requestId, prompt: "calendar", userContent: userMessage.slice(0, 200) }, "LLM request");
+    const systemPrompt = loadPrompt("calendar", { TODAY: today });
+    log.info({ requestId: state.requestId, prompt: "calendar", today, systemPrompt: systemPrompt.slice(0, 500), userContent: userMessage.slice(0, 200) }, "LLM request");
 
     const { response: parseResponse, anthropicRequestId } = await invokeLLM(llm, [
-      {
-        role: "system",
-        content: loadPrompt("calendar", { TODAY: today }),
-      },
+      { role: "system", content: systemPrompt },
       { role: "user", content: userMessage },
     ]);
 

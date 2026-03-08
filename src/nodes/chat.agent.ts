@@ -43,6 +43,7 @@ export async function chatAgent(
         : String(response.content);
 
     log.info({ requestId: state.requestId, anthropicRequestId, replyText: text.slice(0, 200) }, "Chat agent LLM response");
+    log.info({ requestId: state.requestId, action: "reply", replyLength: text.length }, "Chat parsed action");
 
     return { replyText: text };
   } catch (err) {

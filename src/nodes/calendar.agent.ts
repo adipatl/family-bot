@@ -48,7 +48,7 @@ export async function calendarAgent(
 
     const parsed = JSON.parse(jsonMatch[0]);
 
-    log.info({ requestId: state.requestId, action: parsed.action, date: parsed.date, summary: parsed.summary }, "Calendar parsed intent");
+    log.info({ requestId: state.requestId, action: parsed.action, date: parsed.date, summary: parsed.summary, startTime: parsed.startTime, endTime: parsed.endTime, queryDateEnd: parsed.queryDateEnd }, "Calendar parsed action");
 
     if (parsed.action === "date_info") {
       const todayISO = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Bangkok" });
@@ -80,12 +80,14 @@ export async function calendarAgent(
       const start = new Date(`${parsed.date}T${parsed.startTime}:00+07:00`);
       const end = new Date(`${parsed.date}T${parsed.endTime}:00+07:00`);
 
+      log.info({ requestId: state.requestId, service: "addEvent", summary: parsed.summary, start: start.toISOString(), end: end.toISOString() }, "Calling addEvent");
       await addEvent({
         summary: parsed.summary,
         start,
         end,
         description: `ลงโดย ${userName} ผ่าน LINE Bot`,
       });
+      log.info({ requestId: state.requestId }, "addEvent result: success");
 
       const dayStr = start.toLocaleDateString("th-TH", {
         weekday: "long",
@@ -110,7 +112,9 @@ export async function calendarAgent(
       `${parsed.queryDateEnd ?? parsed.date}T23:59:59+07:00`,
     );
 
+    log.info({ requestId: state.requestId, service: "getEvents", dateMin: dateMin.toISOString(), dateMax: dateMax.toISOString() }, "Calling getEvents");
     const events = await getEvents(dateMin, dateMax);
+    log.info({ requestId: state.requestId, eventCount: events.length }, "getEvents result");
 
     if (events.length === 0) {
       return { replyText: "📅 ไม่มีนัดหมายในวันที่ถามค่ะ" };

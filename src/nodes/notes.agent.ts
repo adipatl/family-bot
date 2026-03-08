@@ -11,6 +11,9 @@ export async function notesAgent(
 ): Promise<Partial<BotState>> {
   const { userMessage, userId, userName, groupId } = state;
 
+  const action = LIST_PATTERN.test(userMessage) ? "list" : "add";
+  log.info({ requestId: state.requestId, action, userMessage: userMessage.slice(0, 200) }, "Notes agent started");
+
   try {
     // Check if user wants to list notes
     if (LIST_PATTERN.test(userMessage)) {

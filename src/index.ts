@@ -85,8 +85,7 @@ app.post(
 
       const requestId = crypto.randomUUID().slice(0, 8);
 
-      log.info({ requestId, userId, groupId, messageLength: userMessage.length }, "Message received");
-      log.debug({ requestId, userMessage }, "Message content");
+      log.info({ requestId, userId, groupId, userName, userMessage }, "Message received");
 
       // Fire-and-forget: populate profile cache for next time
       if (!cachedName && userId !== "unknown") {
@@ -151,7 +150,7 @@ app.post(
       if (graphResult.status === "fulfilled") {
         const result = graphResult.value;
         log.info(
-          { requestId, routedTo: result.routedTo, durationMs, replyLength: result.replyText?.length },
+          { requestId, routedTo: result.routedTo, durationMs, replyText: result.replyText?.slice(0, 200) },
           "Response sent",
         );
 

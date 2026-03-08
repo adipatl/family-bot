@@ -12,6 +12,8 @@ export async function chatAgent(
 ): Promise<Partial<BotState>> {
   const { userMessage, userName, language } = state;
 
+  log.info({ requestId: state.requestId, userMessage: userMessage.slice(0, 200) }, "Chat agent started");
+
   try {
     const today = new Date().toLocaleDateString("th-TH", {
       weekday: "long",
@@ -36,6 +38,8 @@ export async function chatAgent(
       typeof response.content === "string"
         ? response.content
         : String(response.content);
+
+    log.info({ requestId: state.requestId, replyText: text.slice(0, 200) }, "Chat agent LLM response");
 
     return { replyText: text };
   } catch (err) {

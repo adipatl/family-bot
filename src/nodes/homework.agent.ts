@@ -15,7 +15,7 @@ export async function homeworkAgent(
   log.info({ requestId: state.requestId, userMessage: userMessage.slice(0, 200) }, "Homework agent started");
 
   try {
-    const today = new Date().toLocaleDateString("th-TH", {
+    const today = new Date().toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",

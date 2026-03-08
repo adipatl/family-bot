@@ -16,7 +16,7 @@ export async function calendarAgent(
   log.info({ requestId: state.requestId, userMessage: userMessage.slice(0, 200) }, "Calendar agent started");
 
   try {
-    const today = new Date().toLocaleDateString("th-TH", {
+    const today = new Date().toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",

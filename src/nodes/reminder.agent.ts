@@ -49,7 +49,7 @@ export async function reminderAgent(
     }
 
     // Use Claude to parse intent and action
-    const now = new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
+    const now = new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" });
 
     log.info({ requestId: state.requestId, prompt: "reminder", userContent: userMessage.slice(0, 200) }, "LLM request");
 

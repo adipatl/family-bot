@@ -28,7 +28,7 @@ export function createLLM(opts: {
         const store = reqIdStore.getStore();
         if (store) {
           store.anthropicRequestId =
-            res.headers.get("x-request-id") ?? undefined;
+            res.headers.get("request-id") ?? undefined;
         }
         return res;
       },

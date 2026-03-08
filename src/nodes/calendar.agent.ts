@@ -1,5 +1,5 @@
 import { loadPrompt } from "../prompts/loader.js";
-import { createLLM } from "../llm.js";
+import { createLLM, invokeLLM } from "../llm.js";
 import { addEvent, getEvents } from "../services/calendar.service.js";
 import type { BotState } from "../graph/state.js";
 import { createLogger } from "../logger.js";
@@ -26,7 +26,7 @@ export async function calendarAgent(
 
     log.info({ requestId: state.requestId, prompt: "calendar", userContent: userMessage.slice(0, 200) }, "LLM request");
 
-    const parseResponse = await llm.invoke([
+    const { response: parseResponse, anthropicRequestId } = await invokeLLM(llm, [
       {
         role: "system",
         content: loadPrompt("calendar", { TODAY: today }),
@@ -39,7 +39,7 @@ export async function calendarAgent(
         ? parseResponse.content
         : String(parseResponse.content);
 
-    log.info({ requestId: state.requestId, llmResponse: text.slice(0, 300) }, "Calendar agent LLM response");
+    log.info({ requestId: state.requestId, anthropicRequestId, llmResponse: text.slice(0, 300) }, "Calendar agent LLM response");
 
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {

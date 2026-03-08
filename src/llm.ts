@@ -1,5 +1,9 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { config } from "./config/index.js";
+
+/** Captures the Anthropic request ID (`req_...`) from HTTP response headers. */
+const reqIdStore = new AsyncLocalStorage<{ anthropicRequestId?: string }>();
 
 /**
  * Shared LLM factory with retry + timeout defaults.
@@ -17,6 +21,30 @@ export function createLLM(opts: {
     maxTokens: opts.maxTokens,
     temperature: opts.temperature ?? 0,
     maxRetries: 3,
-    clientOptions: { timeout: opts.timeout ?? 30_000 },
+    clientOptions: {
+      timeout: opts.timeout ?? 30_000,
+      fetch: async (url: string | Request | URL, init?: RequestInit) => {
+        const res = await globalThis.fetch(url, init);
+        const store = reqIdStore.getStore();
+        if (store) {
+          store.anthropicRequestId =
+            res.headers.get("x-request-id") ?? undefined;
+        }
+        return res;
+      },
+    },
   });
+}
+
+/**
+ * Invoke an LLM and capture the Anthropic request ID from the response header.
+ * Returns both the AIMessage response and the `req_...` ID for logging.
+ */
+export async function invokeLLM(
+  llm: ChatAnthropic,
+  messages: Parameters<ChatAnthropic["invoke"]>[0],
+) {
+  const store = { anthropicRequestId: undefined as string | undefined };
+  const response = await reqIdStore.run(store, () => llm.invoke(messages));
+  return { response, anthropicRequestId: store.anthropicRequestId };
 }

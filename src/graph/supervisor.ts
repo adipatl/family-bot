@@ -1,5 +1,5 @@
 import { loadPrompt } from "../prompts/loader.js";
-import { createLLM } from "../llm.js";
+import { createLLM, invokeLLM } from "../llm.js";
 import type { BotState, AgentName } from "./state.js";
 import { createLogger } from "../logger.js";
 
@@ -78,7 +78,7 @@ async function classifyByLLM(
 ): Promise<{ agent: AgentName; confidence: number; reasoning: string }> {
   log.info({ prompt: "supervisor", userContent: message.slice(0, 200) }, "LLM request");
 
-  const response = await llm.invoke([
+  const { response, anthropicRequestId } = await invokeLLM(llm, [
     { role: "system", content: loadPrompt("supervisor") },
     { role: "user", content: message },
   ]);
@@ -88,7 +88,7 @@ async function classifyByLLM(
       ? response.content.trim()
       : String(response.content);
 
-  log.info({ llmResponse: text.slice(0, 300) }, "Supervisor LLM response");
+  log.info({ anthropicRequestId, llmResponse: text.slice(0, 300) }, "Supervisor LLM response");
 
   // Extract JSON from possible markdown code fences (e.g. ```json ... ```)
   const jsonMatch = text.match(/\{[\s\S]*\}/);

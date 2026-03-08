@@ -20,11 +20,14 @@ export async function polishNode(
   log.info({ requestId: state.requestId, inputLength: replyText.length }, "Polish started");
 
   try {
+    const userContent = `Polish this message in Kookie's voice. Output language: ${language === "th" ? "Thai" : "English"}.\n\n${replyText}`;
+    log.info({ requestId: state.requestId, prompt: "polish", userContent: userContent.slice(0, 200) }, "LLM request");
+
     const response = await llm.invoke([
       { role: "system", content: loadPrompt("polish") },
       {
         role: "user",
-        content: `Polish this message in Kookie's voice. Output language: ${language === "th" ? "Thai" : "English"}.\n\n${replyText}`,
+        content: userContent,
       },
     ]);
 

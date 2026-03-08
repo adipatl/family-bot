@@ -23,6 +23,9 @@ export async function chatAgent(
       timeZone: "Asia/Bangkok",
     });
 
+    const userContent = `${userName}: ${userMessage}`;
+    log.info({ requestId: state.requestId, prompt: "chat", userContent: userContent.slice(0, 200) }, "LLM request");
+
     const response = await llm.invoke([
       {
         role: "system",
@@ -30,7 +33,7 @@ export async function chatAgent(
       },
       {
         role: "user",
-        content: `${userName}: ${userMessage}`,
+        content: userContent,
       },
     ]);
 

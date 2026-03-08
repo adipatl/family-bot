@@ -24,6 +24,8 @@ export async function calendarAgent(
       timeZone: "Asia/Bangkok",
     });
 
+    log.info({ requestId: state.requestId, prompt: "calendar", userContent: userMessage.slice(0, 200) }, "LLM request");
+
     const parseResponse = await llm.invoke([
       {
         role: "system",

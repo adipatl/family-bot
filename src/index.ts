@@ -188,7 +188,8 @@ app.get("/", (_req, res) => {
 // Start server
 app.listen(config.port, () => {
   log.info({ port: config.port }, "Family Bot v2 started");
-  startReminderChecker();
+  // Temporarily disabled — uncomment to re-enable scheduled reminder delivery
+  // startReminderChecker();
 
   // Warm up the actual supervisor LLM — pre-establish HTTP/2 + TLS to Anthropic API
   warmupSupervisor();
